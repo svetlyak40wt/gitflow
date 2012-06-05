@@ -41,9 +41,10 @@
 # Vincent Driessen, Hartmut Goebel or any of the contributors.
 #
 
+from gitflow.bin import main
+from gitflow.exceptions import GitflowError
+
 try:
-    from gitflow.bin import main
-    from gitflow.exceptions import GitflowError
     main()
 except ImportError:
     raise
