@@ -94,6 +94,7 @@ class GitFlow(object):
             self.working_dir = working_dir
 
         self.git = Git(self.working_dir)
+
         try:
             self.repo = Repo(self.working_dir)
         except InvalidGitRepositoryError:
@@ -647,7 +648,8 @@ class GitFlow(object):
         mgr = self.managers[identifier]
         full_name = mgr.full_name(name)
         base = self.git.merge_base(mgr.default_base(), full_name)
-        print self.git.diff('%s..%s' % (base, full_name))
+
+        print self.git.diff('--color', '%s..%s' % (base, full_name))
 
     @requires_initialized
     def rebase(self, identifier, name, interactive):
