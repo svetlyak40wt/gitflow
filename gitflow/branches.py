@@ -10,7 +10,8 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-from git import GitCommandError, Reference
+from collections import defaultdict
+from git import GitCommandError, Reference, RemoteReference
 from gitflow.exceptions import (NoSuchBranchError, BranchExistsError,
                                 PrefixNotUniqueError, BaseNotOnBranch,
                                 WorkdirIsDirtyError, BranchTypeExistsError,
@@ -81,10 +82,10 @@ class BranchManager(object):
         :returns:
             The friendly name of the branch.
         """
-        if full_name.startswith(self.prefix):
-            return full_name[len(self.prefix):]
-        else:
+        pos = full_name.find(self.prefix)
+        if pos == -1:
             return full_name
+        return full_name[pos + len(self.prefix):]
 
     def by_name_prefix(self, nameprefix):
         """
@@ -133,6 +134,22 @@ class BranchManager(object):
             also :meth:`iter`.
         """
         return list(self.iter())
+
+    def list_remotes(self):
+        """Returns list of tuples [(remote, branches),...]
+        """
+        repo = self.gitflow.repo
+        current_remote = repo.remote().name
+        remotes = dict((remote.name, remote) for remote in repo.remotes)
+        result = defaultdict(list)
+
+        for ref in repo.references:
+            if isinstance(ref, RemoteReference):
+                if ref.remote_name != current_remote and ref.remote_head.startswith(self.prefix):
+                    result[ref.remote_name].append(ref)
+
+        result = [(remotes[name], refs) for name, refs in result.items()]
+        return result
 
     def create(self, name, base=None, fetch=False,
                must_be_on_default_base=False):

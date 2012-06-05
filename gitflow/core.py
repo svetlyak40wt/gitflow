@@ -9,6 +9,7 @@ import os
 import sys
 import time
 import datetime
+import itertools
 import ConfigParser
 from functools import wraps
 
@@ -496,7 +497,7 @@ class GitFlow(object):
         explanation on how to start a branch of this type.
 
         :param identifier:
-            The identifier for the type of branch to create.
+            The identifier for the type of branch to list.
             A :class:`BranchManager <git.branches.BranchManager>` for the given
             identifier must exist in the :attr:`self.managers`.
 
@@ -515,7 +516,11 @@ class GitFlow(object):
         """
         repo = self.repo
         manager = self.managers[identifier]
-        branches = manager.list()
+        branches = [('local', manager.list())]
+        branches.extend(
+            (remote.name, refs)
+            for remote, refs in manager.list_remotes()
+        )
         if not branches:
             raise Usage(
                 'No %s branches exist.' % identifier,
@@ -524,41 +529,45 @@ class GitFlow(object):
                 )
 
         # determine the longest branch name
-        width = max(len(b.name) for b in branches) - len(manager.prefix) + 1
+        flat_branches = list(itertools.chain(*(b[1] for b in branches)))
+        width = max(len(b.name) for b in flat_branches) - len(manager.prefix) + 1
 
         basebranch_sha = repo.branches[manager.default_base()].commit.hexsha
 
-        for branch in branches:
-            if repo.active_branch == branch:
-                prefix = '* '
-            else:
-                prefix = '  '
+        for repository, refs in branches:
+            if refs:
+                info(repository)
+            for branch in refs:
+                if repo.active_branch == branch:
+                    prefix = '* '
+                else:
+                    prefix = '  '
 
-            name = manager.shorten(branch.name)
-            extra_info = ''
+                name = manager.shorten(branch.name)
+                extra_info = ''
 
-            if verbose:
-                name = name.ljust(width)
-                branch_sha = branch.commit.hexsha
-                base_sha = repo.git.merge_base(basebranch_sha, branch_sha)
-                if branch_sha == basebranch_sha:
-                    extra_info = '(no commits yet)'
-                elif use_tagname:
-                    try:
-                        extra_info = self.git.name_rev('--tags','--name-only',
-                                                       '--no-undefined', base_sha)
-                        extra_info = '(based on %s)' % extra_info
-                    except GitCommandError:
-                        pass
-                if not extra_info:
-                    if base_sha == branch_sha:
-                        extra_info = '(is behind %s, may ff)' % manager.default_base()
-                    elif base_sha == basebranch_sha:
-                        extra_info = '(based on latest %s)' % manager.default_base()
-                    else:
-                        extra_info = '(may be rebased)'
+                if verbose:
+                    name = name.ljust(width)
+                    branch_sha = branch.commit.hexsha
+                    base_sha = repo.git.merge_base(basebranch_sha, branch_sha)
+                    if branch_sha == basebranch_sha:
+                        extra_info = '(no commits yet)'
+                    elif use_tagname:
+                        try:
+                            extra_info = self.git.name_rev('--tags','--name-only',
+                                                           '--no-undefined', base_sha)
+                            extra_info = '(based on %s)' % extra_info
+                        except GitCommandError:
+                            pass
+                    if not extra_info:
+                        if base_sha == branch_sha:
+                            extra_info = '(is behind %s, may ff)' % manager.default_base()
+                        elif base_sha == basebranch_sha:
+                            extra_info = '(based on latest %s)' % manager.default_base()
+                        else:
+                            extra_info = '(may be rebased)'
 
-            info(prefix + name + extra_info)
+                info(prefix + name + extra_info)
 
 
     @requires_initialized
