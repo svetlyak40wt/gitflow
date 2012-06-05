@@ -467,6 +467,7 @@ class HotfixCommand(GitFlowCommand):
         cls.register_start(sub)
         cls.register_finish(sub)
         cls.register_publish(sub)
+        cls.register_diff(sub)
 
     #- list
     @classmethod
@@ -582,6 +583,21 @@ class HotfixCommand(GitFlowCommand):
         print "- The local branch '%s' was configured to track the remote branch" % branch
         print "- You are now on branch '%s'" % branch
         print
+
+    #- diff
+    @classmethod
+    def register_diff(cls, parent):
+        p = parent.add_parser('diff',
+                help='Show a diff of changes since this feature branched off.')
+        p.set_defaults(func=cls.run_diff)
+        p.add_argument('nameprefix', nargs='?')
+
+    @staticmethod
+    def run_diff(args):
+        gitflow = GitFlow()
+        name = gitflow.nameprefix_or_current('hotfix', args.nameprefix)
+        gitflow.start_transaction('diff for hotfix branch %s' % name)
+        gitflow.diff('hotfix', name)
 
 
 class SupportCommand(GitFlowCommand):
