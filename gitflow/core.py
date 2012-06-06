@@ -641,7 +641,7 @@ class GitFlow(object):
         return branch.checkout()
 
     @requires_initialized
-    def diff(self, identifier, name):
+    def diff(self, identifier, name, color=True):
         """
         Print the diff of changes since this branch branched off.
 
@@ -652,13 +652,21 @@ class GitFlow(object):
 
         :param name:
             The friendly (short) name to create.
+
+        :param color:
+            Use ascii secuences to colorize output.
         """
         repo = self.repo
         mgr = self.managers[identifier]
         full_name = mgr.full_name(name)
         base = self.git.merge_base(mgr.default_base(), full_name)
 
-        print self.git.diff('--color', '%s..%s' % (base, full_name))
+        options = ['%s..%s' % (base, full_name)]
+
+        if color:
+            options.insert(0, '--color')
+
+        print self.git.diff(*options)
 
     @requires_initialized
     def rebase(self, identifier, name, interactive):

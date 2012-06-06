@@ -828,7 +828,7 @@ class TestGitFlowCommandDiff(TestCase):
         gitflow = GitFlow(self.repo).init()
         orig_stdout = sys.stdout
         sys.stdout = StringIO.StringIO()
-        gitflow.diff('feature', 'recursion')
+        gitflow.diff('feature', 'recursion', color=False)
         diff = sys.stdout.getvalue()
         sys.stdout = orig_stdout
         difflines = diff.splitlines()
