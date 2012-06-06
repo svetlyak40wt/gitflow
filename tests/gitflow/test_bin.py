@@ -261,6 +261,7 @@ class TestFeature(TestCase):
     def test_feature_list(self):
         stdout = runGitFlow('feature', 'list', capture=1)
         expected = [
+          'local',
           '  even',
           '* recursion'
           ]
@@ -270,6 +271,7 @@ class TestFeature(TestCase):
     def test_feature_list_verbose(self):
         stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '  even      (based on latest devel)',
           '* recursion (based on latest devel)'
           ]
@@ -281,6 +283,7 @@ class TestFeature(TestCase):
         fake_commit(self.repo, 'A commit on devel')
         stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '  even      (may be rebased)',
           '  recursion (may be rebased)'
           ]
@@ -293,6 +296,7 @@ class TestFeature(TestCase):
         repo.create_head('feature/wow', 'HEAD')
         stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '  wow (no commits yet)'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -304,6 +308,7 @@ class TestFeature(TestCase):
         fake_commit(self.repo, 'A commit on devel')
         stdout = runGitFlow('feature', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '  even      (may be rebased)',
           '  recursion (is behind devel, may ff)'
           ]
@@ -523,6 +528,7 @@ class TestRelease(TestCase):
     def test_release_list(self):
         stdout = runGitFlow('release', 'list', capture=1)
         expected = [
+          'local',
           '  1.0'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -531,6 +537,7 @@ class TestRelease(TestCase):
     def test_release_list_verbose(self):
         stdout = runGitFlow('release', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '  1.0 (based on latest devel)'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -672,6 +679,7 @@ class TestHotfix(TestCase):
         self.repo.create_head('hf/2.3', 'HEAD')
         stdout = runGitFlow('hotfix', 'list', capture=1)
         expected = [
+          'local',
           '  2.3'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -681,6 +689,7 @@ class TestHotfix(TestCase):
         self.repo.create_head('hf/2.3', 'HEAD')
         stdout = runGitFlow('hotfix', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '  2.3 (based on latest stable)'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -692,6 +701,7 @@ class TestHotfix(TestCase):
         fake_commit(self.repo, 'Hotfix commit.')
         stdout = runGitFlow('hotfix', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '* 1.0.1 (based on v1.0)'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -818,6 +828,7 @@ class TestSupport(TestCase):
         self.repo.create_head('supp/1.0-22', 'HEAD')
         stdout = runGitFlow('support', 'list', capture=1)
         expected = [
+          'local',
           '  1.0-22'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -827,6 +838,7 @@ class TestSupport(TestCase):
         self.repo.create_head('supp/1.0-22', 'HEAD')
         stdout = runGitFlow('support', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '  1.0-22 (based on latest stable)'
           ]
         self.assertEqual(stdout.splitlines(), expected)
@@ -838,6 +850,7 @@ class TestSupport(TestCase):
         fake_commit(self.repo, 'Support commit.')
         stdout = runGitFlow('support', 'list', '--verbose', capture=1)
         expected = [
+          'local',
           '* 1.0-22 (based on v1.0)'
           ]
         self.assertEqual(stdout.splitlines(), expected)
