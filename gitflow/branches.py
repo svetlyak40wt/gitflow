@@ -203,8 +203,9 @@ class BranchManager(object):
         if gitflow.origin_name(self.default_base()) in repo.refs:
             # :todo: rethink: check this only if base == default_base()?
             gitflow.require_branches_equal(
-                gitflow.origin_name(self.default_base()),
-                self.default_base())
+                self.default_base(),
+                gitflow.origin_name(self.default_base())
+            )
 
         if base is None:
             base = self.default_base()
