@@ -447,9 +447,9 @@ class GitFlow(object):
             base = self.repo.git.merge_base(commit1, commit2)
         except GitCommandError:
             return 4
-        if base == commit1:
+        if base == commit1.hexsha:
             return 1
-        elif base == commit2:
+        elif base == commit2.hexsha:
             return 2
         else:
             return 3
