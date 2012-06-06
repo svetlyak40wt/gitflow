@@ -805,10 +805,6 @@ class TestHotfix(TestCase):
         self.assertArgparseError("invalid choice: 'track'",
                                  runGitFlow, 'hotfix', 'track')
 
-    def test_hotfix_diff_is_no_valid_subcommand(self):
-        self.assertArgparseError("invalid choice: 'diff'",
-                                 runGitFlow, 'hotfix', 'diff')
-
     def test_hotfix_rebase_is_no_valid_subcommand(self):
         self.assertArgparseError("invalid choice: 'rebase'",
                                  runGitFlow, 'hotfix', 'rebase')
