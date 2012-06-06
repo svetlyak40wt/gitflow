@@ -26,7 +26,7 @@ from gitflow.core import GitFlow, info
 from gitflow.util import itersubclasses
 from gitflow.exceptions import (GitflowError, AlreadyInitialized,
                                 NotInitialized, BranchTypeExistsError,
-                                BaseNotOnBranch)
+                                BaseNotOnBranch, NoSuchBranchError)
 
 __copyright__ = "2010-2011 Vincent Driessen; 2012 Hartmut Goebel"
 __license__ = "BSD"
@@ -201,7 +201,7 @@ class FeatureCommand(GitFlowCommand):
     @classmethod
     def register_checkout(cls, parent):
         p = parent.add_parser('checkout',
-                help='Check out (switch to) the given feature branch.')
+                help='Check out (switch to) the given feature branch. If it is missing, then command tries to find such branch among remotes.')
         p.set_defaults(func=cls.run_checkout)
         p.add_argument('nameprefix', action=NotEmpty)
 
@@ -209,9 +209,29 @@ class FeatureCommand(GitFlowCommand):
     def run_checkout(args):
         gitflow = GitFlow()
         # NB: Does not default to the current branch as `nameprefix` is required
-        name = gitflow.nameprefix_or_current('feature', args.nameprefix)
-        gitflow.start_transaction('checking out feature branch %s' % name)
-        gitflow.checkout('feature', name)
+        try:
+            name = gitflow.nameprefix_or_current('feature', args.nameprefix)
+        except NoSuchBranchError:
+            # if there is not such branch, we'll try to figureout if there
+            # are some remote features to clone
+            manager = gitflow.managers['feature']
+            remotes = manager.list_remotes()
+            found = False
+            for remote, refs in remotes:
+                for ref in refs:
+                    short_name = manager.shorten(ref.name)
+                    if short_name == args.nameprefix:
+                        name = ref.name
+                        gitflow.start_transaction('creating a local branch for feature %s' % name)
+                        gitflow.create('feature', short_name, ref, True)
+                        found = True
+                        break
+
+            if not found:
+                raise NoSuchBranchError('There is no feature branch %s in remote repositories')
+        else:
+            gitflow.start_transaction('checking out feature branch %s' % name)
+            gitflow.checkout('feature', name)
 
     #- diff
     @classmethod
