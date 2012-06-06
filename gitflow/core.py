@@ -521,6 +521,8 @@ class GitFlow(object):
             (remote.name, refs)
             for remote, refs in manager.list_remotes()
         )
+        branches = [(rep_name, refs) for rep_name, refs in branches if refs]
+
         if not branches:
             raise Usage(
                 'No %s branches exist.' % identifier,
@@ -535,8 +537,8 @@ class GitFlow(object):
         basebranch_sha = repo.branches[manager.default_base()].commit.hexsha
 
         for repository, refs in branches:
-            if refs:
-                info(repository)
+            info(repository)
+
             for branch in refs:
                 if repo.active_branch == branch:
                     prefix = '* '
